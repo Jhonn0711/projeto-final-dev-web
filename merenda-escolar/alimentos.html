@@ -1,0 +1,139 @@
+<!-- alimentos.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Alimentos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@5/dark.css">
+  <style>
+    body {
+      background-color: #0d1117;
+      color: white;
+    }
+    .card {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+    }
+    .btn-primary {
+      background-color: #1f6feb;
+      border-color: #1f6feb;
+    }
+  </style>
+</head>
+<body>
+<div class="container mt-4">
+  <div class="card p-4">
+    <h3 class="text-info">Cadastro de Alimentos</h3>
+    <form id="form-alimento">
+      <div class="mb-3">
+        <label for="nome" class="form-label text-white">Nome</label>
+        <input type="text" class="form-control" id="nome" required>
+      </div>
+      <div class="mb-3">
+        <label for="unidade" class="form-label text-white">Unidade de Medida</label>
+        <select id="unidade" class="form-control" required></select>
+      </div>
+      <div class="mb-3">
+        <label for="fornecedor" class="form-label text-white">Fornecedor</label>
+        <select id="fornecedor" class="form-control" required></select>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+    </form>
+  </div>
+
+  <div class="card mt-4 p-4">
+    <h4 class="text-info">Lista de Alimentos</h4>
+    <table class="table table-dark table-hover mt-2">
+      <thead>
+        <tr><th>Nome</th><th>Unidade</th><th>Fornecedor</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="lista-alimentos"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  const unidades = ["Kg", "g", "Unidade"];
+  const fornecedores = ["Fornecedor A", "Fornecedor B"];
+  const alimentos = [];
+
+  function atualizarSelects() {
+    $('#unidade').html(unidades.map(u => `<option>${u}</option>`).join(''));
+    $('#fornecedor').html(fornecedores.map(f => `<option>${f}</option>`).join(''));
+  }
+
+  function renderAlimentos() {
+    $('#lista-alimentos').html(alimentos.map((a, i) => `
+      <tr>
+        <td>${a.nome}</td>
+        <td>${a.unidade}</td>
+        <td>${a.fornecedor}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" onclick="editarAlimento(${i})">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="removerAlimento(${i})">🗑️</button>
+        </td>
+      </tr>`).join(''));
+  }
+
+  $('#form-alimento').on('submit', function(e) {
+    e.preventDefault();
+    const nome = $('#nome').val();
+    const unidade = $('#unidade').val();
+    const fornecedor = $('#fornecedor').val();
+
+    alimentos.push({ nome, unidade, fornecedor });
+    Swal.fire('Sucesso', 'Alimento cadastrado!', 'success');
+    this.reset();
+    renderAlimentos();
+  });
+
+  function removerAlimento(index) {
+    Swal.fire({
+      title: 'Tem certeza?',
+      text: 'Deseja remover este alimento?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, remover'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        alimentos.splice(index, 1);
+        renderAlimentos();
+      }
+    });
+  }
+
+  function editarAlimento(index) {
+    const a = alimentos[index];
+    Swal.fire({
+      title: 'Editar Alimento',
+      html: `
+        <input id="swal-nome" class="swal2-input" value="${a.nome}">
+        <select id="swal-unidade" class="swal2-input">${unidades.map(u => `<option${u===a.unidade?' selected':''}>${u}</option>`)}</select>
+        <select id="swal-fornecedor" class="swal2-input">${fornecedores.map(f => `<option${f===a.fornecedor?' selected':''}>${f}</option>`)}</select>
+      `,
+      confirmButtonText: 'Salvar',
+      preConfirm: () => {
+        a.nome = document.getElementById('swal-nome').value;
+        a.unidade = document.getElementById('swal-unidade').value;
+        a.fornecedor = document.getElementById('swal-fornecedor').value;
+        renderAlimentos();
+      }
+    });
+  }
+
+  
+  const user = localStorage.getItem('usuario_logado');
+  if (!user) {
+    window.location.href = 'login.html';
+  }
+
+
+
+  atualizarSelects();
+  renderAlimentos();
+</script>
+</body>
+</html>

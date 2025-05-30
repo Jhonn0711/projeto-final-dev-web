@@ -1,0 +1,130 @@
+<!-- fornecedores.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Fornecedores</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@5/dark.css">
+  <style>
+    body {
+      background-color: #0d1117;
+      color: white;
+    }
+    .card {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+    }
+    .btn-primary {
+      background-color: #1f6feb;
+      border-color: #1f6feb;
+    }
+  </style>
+</head>
+<body>
+<div class="container mt-4">
+  <div class="card p-4">
+    <h3 class="text-info">Cadastro de Fornecedores</h3>
+    <form id="form-fornecedor">
+      <div class="mb-3">
+        <label for="nome-fornecedor" class="form-label">Nome do Fornecedor</label>
+        <input type="text" class="form-control" id="nome-fornecedor" required>
+      </div>
+      <div class="mb-3">
+        <label for="cnpj-fornecedor" class="form-label">CNPJ</label>
+        <input type="text" class="form-control" id="cnpj-fornecedor" required>
+      </div>
+      <div class="mb-3">
+        <label for="telefone-fornecedor" class="form-label">Telefone</label>
+        <input type="text" class="form-control" id="telefone-fornecedor">
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+    </form>
+  </div>
+
+  <div class="card mt-4 p-4">
+    <h4 class="text-info">Lista de Fornecedores</h4>
+    <table class="table table-dark table-hover mt-2">
+      <thead>
+        <tr><th>Nome</th><th>CNPJ</th><th>Telefone</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="lista-fornecedores"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  const fornecedores = [];
+
+  function renderFornecedores() {
+    $('#lista-fornecedores').html(fornecedores.map((f, i) => `
+      <tr>
+        <td>${f.nome}</td>
+        <td>${f.cnpj}</td>
+        <td>${f.telefone}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" onclick="editarFornecedor(${i})">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="removerFornecedor(${i})">🗑️</button>
+        </td>
+      </tr>`).join(''));
+  }
+
+  $('#form-fornecedor').on('submit', function(e) {
+    e.preventDefault();
+    const nome = $('#nome-fornecedor').val().trim();
+    const cnpj = $('#cnpj-fornecedor').val().trim();
+    const telefone = $('#telefone-fornecedor').val().trim();
+    if (!nome || !cnpj) return;
+    fornecedores.push({ nome, cnpj, telefone });
+    Swal.fire('Sucesso', 'Fornecedor cadastrado!', 'success');
+    this.reset();
+    renderFornecedores();
+  });
+
+  function removerFornecedor(index) {
+    Swal.fire({
+      title: 'Tem certeza?',
+      text: 'Deseja remover este fornecedor?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, remover'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fornecedores.splice(index, 1);
+        renderFornecedores();
+      }
+    });
+  }
+
+  function editarFornecedor(index) {
+    const fornecedor = fornecedores[index];
+    Swal.fire({
+      title: 'Editar Fornecedor',
+      html: `
+        <input id="swal-nome" class="swal2-input" placeholder="Nome" value="${fornecedor.nome}">
+        <input id="swal-cnpj" class="swal2-input" placeholder="CNPJ" value="${fornecedor.cnpj}">
+        <input id="swal-telefone" class="swal2-input" placeholder="Telefone" value="${fornecedor.telefone}">
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Salvar',
+      preConfirm: () => {
+        const nome = document.getElementById('swal-nome').value.trim();
+        const cnpj = document.getElementById('swal-cnpj').value.trim();
+        const telefone = document.getElementById('swal-telefone').value.trim();
+        if (!nome || !cnpj) {
+          Swal.showValidationMessage('Nome e CNPJ são obrigatórios');
+          return false;
+        }
+        fornecedores[index] = { nome, cnpj, telefone };
+        renderFornecedores();
+      }
+    });
+  }
+
+  renderFornecedores();
+</script>
+</body>
+</html>
